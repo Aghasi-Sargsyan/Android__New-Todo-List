@@ -1,62 +1,79 @@
 package com.example.aghasi.todolist.activities;
 
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.aghasi.todolist.R;
-import com.example.aghasi.todolist.fragments.ItemPageFragment;
+import com.example.aghasi.todolist.adapter.TodoItemAdapter;
 import com.example.aghasi.todolist.fragments.ItemListFragment;
+import com.example.aghasi.todolist.fragments.ItemPageFragment;
 import com.example.aghasi.todolist.items.TodoItem;
+
+import static com.example.aghasi.todolist.fragments.ItemPageFragment.OnSaveActionListener;
+import static com.example.aghasi.todolist.fragments.ItemPageFragment.newInstance;
 
 public class MainActivity extends AppCompatActivity {
 
     private ImageView mImageAddItem;
-    private ItemListFragment mItemsListFragment;
-    private ItemPageFragment.OnFragmentInteractionListener mListener = new ItemPageFragment.OnFragmentInteractionListener() {
-        @Override
-        public void onItemCreated(TodoItem todoItem) {
-            mItemsListFragment.addTodoItem(todoItem);
-            getFragmentManager().popBackStack();
-        }
-    };
+    private ItemListFragment mItemListFragment;
+
 
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mImageAddItem = findViewById(R.id.image_activity_main_add_item);
 
-        idInitialization();
+        setupAddButton();
 
-        mImageAddItem.setOnClickListener(new View.OnClickListener() {
+        mItemListFragment = (ItemListFragment) getFragmentManager().findFragmentById(R.id.fragment_activity_main);
+        mItemListFragment.setOnItemClicked(new TodoItemAdapter.OnItemClicked() {
             @Override
-            public void onClick(View view) {
-                openNewItemPageFragment();
+            public void onItemClicked(TodoItem todoItem) {
+                showItemView(todoItem);
             }
         });
     }
 
-    private void openNewItemPageFragment() {
-        ItemPageFragment itemPageFragment = ItemPageFragment.newInstance(new TodoItem());
-        itemPageFragment.setOnFragmentInteractionListener(mListener);
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.constraint_main, itemPageFragment)
-                .addToBackStack("EditItemFragment")
+
+    private void setupAddButton() {
+        mImageAddItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showItemView(null);
+
+            }
+        });
+    }
+
+    private void popPageFragment() {
+        getFragmentManager().popBackStack();
+    }
+
+    private void showItemView(TodoItem item) {
+        ItemPageFragment fragment = newInstance(item);
+        fragment.setOnSaveActionListener(new OnSaveActionListener() {
+            @Override
+            public void onCreated(TodoItem todoItem) {
+                mItemListFragment.addItemToAdapterList(todoItem);
+                popPageFragment();
+            }
+
+            @Override
+            public void onUpdated(TodoItem todoItem) {
+                mItemListFragment.updateItemInAdapterList(todoItem);
+                popPageFragment();
+            }
+        });
+        getFragmentManager()
+                .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .add(R.id.container_activity_main, fragment)
+                .addToBackStack(ItemPageFragment.FRAGMENT_NAME)
                 .commit();
     }
-
-    private void idInitialization() {
-        mImageAddItem = findViewById(R.id.image_activity_main_add_item);
-        mItemsListFragment = (ItemListFragment) (getFragmentManager()
-                .findFragmentById(R.id.fragment_activity_main));
-    }
-
 }

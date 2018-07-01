@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.example.aghasi.todolist.util.RepeatPeriod;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class TodoItem implements Parcelable {
 
@@ -18,18 +19,45 @@ public class TodoItem implements Parcelable {
     private boolean mReminder;
     private int mPriority;
     private RepeatPeriod mRepeatPeriod;
+    private UUID mId;
 
     public TodoItem() {
         mDate = new Date();
+        mId = UUID.randomUUID();
     }
+
 
     private TodoItem(Parcel in) {
         mTitle = in.readString();
         mDescription = in.readString();
+        mDate = new Date(in.readLong());
         mReminder = in.readByte() != 0;
         mPriority = in.readInt();
         int repeatTypeOrdinal = in.readInt();
         mRepeatPeriod = RepeatPeriod.values()[repeatTypeOrdinal];
+        mId = (UUID)in.readSerializable();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof  TodoItem)) {
+            return false;
+        }
+
+        TodoItem newItem = (TodoItem) obj;
+
+        return newItem.mId.equals(this.mId);
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mTitle);
+        parcel.writeString(mDescription);
+        parcel.writeLong(mDate.getTime());
+        parcel.writeInt((byte) (mReminder ? 1 : 0));
+        parcel.writeInt(mPriority);
+        parcel.writeInt(mRepeatPeriod.ordinal());
+        parcel.writeSerializable(mId);
     }
 
     public static final Creator<TodoItem> CREATOR = new Creator<TodoItem>() {
@@ -95,15 +123,5 @@ public class TodoItem implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(mTitle);
-        parcel.writeString(mDescription);
-        parcel.writeLong(mDate.getTime());
-        parcel.writeInt(mReminder ? 1:0);
-        parcel.writeInt(mPriority);
-        parcel.writeInt(mRepeatPeriod.ordinal());
     }
 }

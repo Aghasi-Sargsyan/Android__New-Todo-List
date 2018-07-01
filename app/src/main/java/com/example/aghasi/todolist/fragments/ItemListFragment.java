@@ -19,26 +19,35 @@ public class ItemListFragment extends Fragment {
 
     @Nullable
     @Override
+
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_item_list, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        init(view);
+        initRecycler(view);
     }
 
-    public void addTodoItem(TodoItem todoItem) {
-        mTodoItemAdapter.addItemToList(todoItem);
-        mTodoItemAdapter.notifyDataSetChanged();
-    }
-
-    private void init(View view) {
+    private void initRecycler(View view) {
         mTodoItemAdapter = new TodoItemAdapter();
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(mTodoItemAdapter);
+    }
+
+    public void addItemToAdapterList(TodoItem todoItem) {
+        mTodoItemAdapter.addItemToList(todoItem);
+        mTodoItemAdapter.notifyDataSetChanged();
+    }
+
+    public void updateItemInAdapterList(TodoItem todoItem) {
+        mTodoItemAdapter.updateItem(todoItem);
+        mTodoItemAdapter.notifyDataSetChanged();
+    }
+
+    public void setOnItemClicked(TodoItemAdapter.OnItemClicked onItemClicked) {
+        mTodoItemAdapter.setOnItemClicked(onItemClicked);
     }
 }

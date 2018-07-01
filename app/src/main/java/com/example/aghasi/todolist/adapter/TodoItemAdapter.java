@@ -3,6 +3,7 @@ package com.example.aghasi.todolist.adapter;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.aghasi.todolist.R;
@@ -16,6 +17,7 @@ import java.util.List;
 public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
 
     private List<TodoItem> mItemList;
+    private OnItemClicked mOnItemClicked;
 
     public TodoItemAdapter() {
         mItemList = new ArrayList<>();
@@ -24,18 +26,23 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
     @NonNull
     @Override
     public TodoItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        TodoItemViewHolder viewHolder = new TodoItemViewHolder(LayoutInflater.from(parent.getContext())
+        return new TodoItemViewHolder(LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_todo_item, parent, false));
-        return viewHolder;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull TodoItemViewHolder holder, int position) {
-        TodoItem item = mItemList.get(position);
+        final TodoItem item = mItemList.get(position);
         holder.getTitle().setText(item.getTitle());
         holder.getDescription().setText(item.getDescription());
         holder.getDateAndTime().setText(DateUtil.dateToStringParser(item.getDate()));
+        holder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                   mOnItemClicked.onItemClicked(item);
+            }
+        });
     }
 
     @Override
@@ -45,5 +52,22 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
 
     public void addItemToList(TodoItem todoItem) {
         mItemList.add(todoItem);
+    }
+
+    public void updateItem(TodoItem todoItem) {
+        for (int i = 0; i < mItemList.size(); i++) {
+            if (todoItem.equals(mItemList.get(i))) {
+                mItemList.set(i, todoItem);
+                break;
+            }
+        }
+    }
+
+    public void setOnItemClicked(OnItemClicked onItemClicked) {
+        mOnItemClicked = onItemClicked;
+    }
+
+    public interface OnItemClicked {
+        void onItemClicked(TodoItem todoItem);
     }
 }
