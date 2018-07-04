@@ -50,4 +50,10 @@ public class ItemListFragment extends Fragment {
     public void setOnItemClicked(TodoItemAdapter.OnItemClicked onItemClicked) {
         mTodoItemAdapter.setOnItemClicked(onItemClicked);
     }
+
+    public void removeItemFromAdapterList(int position) {
+        mTodoItemAdapter.removeItemFromList(position);
+        mTodoItemAdapter.notifyDataSetChanged();
+    }
+
 }

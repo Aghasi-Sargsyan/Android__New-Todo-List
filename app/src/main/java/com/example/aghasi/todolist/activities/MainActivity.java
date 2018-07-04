@@ -36,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClicked(TodoItem todoItem) {
                 showItemView(todoItem);
             }
+
+            @Override
+            public void onRemoveClicked(int position) {
+                mItemListFragment.removeItemFromAdapterList(position);
+            }
         });
     }
 

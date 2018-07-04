@@ -9,7 +9,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -41,6 +40,7 @@ public class ItemPageFragment extends Fragment {
     private int mPriorityCounter = 0;
     private TodoItem mTodoItem;
     private OnSaveActionListener mOnSaveActionListener;
+    private boolean isEditMode;
 
     public static ItemPageFragment newInstance(TodoItem todoItem) {
 
@@ -63,11 +63,25 @@ public class ItemPageFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_save:
-                save();
+                if (isEditMode) {
+                    enableFields();
+                    item.setIcon(R.drawable.ic_menu_save);
+                    isEditMode = false;
+                } else {
+                    save();
+                }
                 return true;
             default:
                 return false;
 
+        }
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (mItemMode == EDIT_ITEM) {
+            menu.findItem(R.id.menu_save).setIcon(R.drawable.ic_mode_edit_black_24dp);
         }
     }
 
@@ -81,6 +95,7 @@ public class ItemPageFragment extends Fragment {
                 mTodoItem = getArguments().getParcelable(ARG_TODO_ITEM);
 
                 mItemMode = EDIT_ITEM;
+                isEditMode = true;
             }
         }
     }
@@ -95,17 +110,19 @@ public class ItemPageFragment extends Fragment {
 
     private void save() {
         KeyboardUtil.hideKeyboardFrom(getActivity(), getView());
-        if (mItemMode == CREATE_ITEM) {
-            mTodoItem = new TodoItem();
-        }
-        mTodoItem.setTitle(mEditTitle.getText().toString());
-        mTodoItem.setDescription(mEditDescription.getText().toString());
-        mTodoItem.setDate(mSelectedDate);
-        if (mOnSaveActionListener != null) {
+        if (checkTitle ()) {
             if (mItemMode == CREATE_ITEM) {
-                mOnSaveActionListener.onCreated(mTodoItem);
-            } else {
-                mOnSaveActionListener.onUpdated(mTodoItem);
+                mTodoItem = new TodoItem();
+            }
+            mTodoItem.setTitle(mEditTitle.getText().toString());
+            mTodoItem.setDescription(mEditDescription.getText().toString());
+            mTodoItem.setDate(mSelectedDate);
+            if (mOnSaveActionListener != null) {
+                if (mItemMode == CREATE_ITEM) {
+                    mOnSaveActionListener.onCreated(mTodoItem);
+                } else {
+                    mOnSaveActionListener.onUpdated(mTodoItem);
+                }
             }
         }
     }
@@ -121,6 +138,9 @@ public class ItemPageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         idInitialization(view);
         setupEditMode();
+        if (mItemMode == EDIT_ITEM) {
+            disableFields();
+        }
     }
 
     private void idInitialization(View view) {
@@ -143,5 +163,35 @@ public class ItemPageFragment extends Fragment {
         void onCreated(TodoItem todoItem);
 
         void onUpdated(TodoItem todoItem);
+    }
+
+    private void disableFields() {
+        mEditTitle.setFocusable(false);
+        mEditDescription.setFocusable(false);
+        mCheckBoxReminder.setEnabled(false);
+        mCheckBoxRepeat.setEnabled(false);
+        mTextDateTime.setEnabled(false);
+        mImageUp.setEnabled(false);
+        mImageDown.setEnabled(false);
+    }
+
+    private void enableFields() {
+        mEditTitle.setFocusable(true);
+        mEditTitle.setFocusableInTouchMode(true);
+        mEditDescription.setFocusable(true);
+        mEditDescription.setFocusableInTouchMode(true);
+        mCheckBoxReminder.setEnabled(true);
+        mCheckBoxRepeat.setEnabled(true);
+        mTextDateTime.setEnabled(true);
+        mImageUp.setEnabled(true);
+        mImageDown.setEnabled(true);
+    }
+
+    private boolean checkTitle (){
+        if (mEditTitle.getText().toString().length() <= 0) {
+            mEditTitle.setError("Title is empty");
+            return false;
+        }
+        return true;
     }
 }

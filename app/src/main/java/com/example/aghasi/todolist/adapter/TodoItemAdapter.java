@@ -32,15 +32,21 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
 
 
     @Override
-    public void onBindViewHolder(@NonNull TodoItemViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final TodoItemViewHolder holder, final int position) {
         final TodoItem item = mItemList.get(position);
         holder.getTitle().setText(item.getTitle());
         holder.getDescription().setText(item.getDescription());
         holder.getDateAndTime().setText(DateUtil.dateToStringParser(item.getDate()));
-        holder.setOnClickListener(new View.OnClickListener() {
+        holder.setOnItemClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                    mOnItemClicked.onItemClicked(item);
+            }
+        });
+        holder.setOnRemoveClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOnItemClicked.onRemoveClicked(holder.getAdapterPosition());
             }
         });
     }
@@ -52,6 +58,10 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
 
     public void addItemToList(TodoItem todoItem) {
         mItemList.add(todoItem);
+    }
+
+    public void removeItemFromList(int position) {
+        mItemList.remove(position);
     }
 
     public void updateItem(TodoItem todoItem) {
@@ -69,5 +79,7 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemViewHolder> {
 
     public interface OnItemClicked {
         void onItemClicked(TodoItem todoItem);
+
+        void onRemoveClicked(int position);
     }
 }
